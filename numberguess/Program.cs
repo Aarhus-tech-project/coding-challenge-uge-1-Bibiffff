@@ -1,4 +1,5 @@
 ﻿using System;
+
 using System.Collections.Generic;
 using System.Threading;
 
@@ -22,7 +23,6 @@ namespace numberguess
     }
 
     // GAME MENU
-
     class Game
     {
         public void Start()
@@ -32,34 +32,36 @@ namespace numberguess
             Console.WriteLine("Vælg spilmode:");
             Console.ResetColor();
 
+            // Spil muligheder
             Console.WriteLine(" 1) Programmet gætter dit tal");
             Console.WriteLine(" 2) Du gætter programmets tal");
             Console.WriteLine(" 3) Snake");
             Console.Write("\nDit valg: ");
 
             string choice = Console.ReadLine();
-            if (choice == "1")
+
+            switch (choice)
             {
-                ProgramGuesses game = new ProgramGuesses();
-                game.Play();
-            }
-            else if (choice == "2")
-            {
-                UserGuesses game = new UserGuesses();
-                game.Play();
-            }
-            else if (choice == "3")
-            {
-                SnakeGame game = new SnakeGame();
-                game.Play();
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Ugyldigt valg.");
-                Console.ResetColor();
+                case "1":
+                    new ProgramGuesses().Play();
+                    break;
+
+                case "2":
+                    new UserGuesses().Play();
+                    break;
+
+                case "3":
+                    new SnakeGame().Play();
+                    break;
+
+                default:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Ugyldigt valg.");
+                    Console.ResetColor();
+                    break;
             }
 
+            // Besked når spillet er færdigt
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("\n==========================================");
             Console.WriteLine("        Tak fordi du spillede!");
@@ -69,7 +71,6 @@ namespace numberguess
     }
 
     // MODE 1: PROGRAMMET GÆTTER BRUGERENS TAL
-
     class ProgramGuesses
     {
         public void Play()
@@ -143,7 +144,6 @@ namespace numberguess
     }
 
     // MODE 2: BRUGEREN GÆTTER PROGRAMMETS TAL
-
     class UserGuesses
     {
         public void Play()
@@ -178,16 +178,10 @@ namespace numberguess
                     Console.ResetColor();
                     won = true;
                 }
-                else if (guess < target)
-                {
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine(" For lavt!");
-                    Console.ResetColor();
-                }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine(" For højt!");
+                    Console.WriteLine(guess < target ? "For lavt!" : "For højt!");
                     Console.ResetColor();
                 }
             }
@@ -241,14 +235,12 @@ namespace numberguess
 
             while (alive)
             {
-                // Input
                 if (Console.KeyAvailable)
                 {
                     ConsoleKey key = Console.ReadKey(true).Key;
                     dir = ChangeDirection(dir, key);
                 }
 
-                // New head
                 var head = snake.First.Value;
                 var newHead = head;
 
@@ -260,7 +252,6 @@ namespace numberguess
                     case Direction.Right: newHead.x++; break;
                 }
 
-                // Collisions
                 if (newHead.x <= 0 || newHead.x >= width - 1 ||
                     newHead.y <= 1 || newHead.y >= height - 1)
                     alive = false;
@@ -271,18 +262,16 @@ namespace numberguess
 
                 if (!alive) break;
 
-                // Move snake
                 snake.AddFirst(newHead);
-                Draw(newHead.x, newHead.y, 'O');
+                Draw(newHead.x, newHead.y, 'O', ConsoleColor.Green);
 
-                // FOOD
                 if (newHead == food)
                 {
                     score++;
                     ShowScore(score);
 
                     food = PlaceFood(rand, width, height, snake);
-                    Draw(food.x, food.y, '*');
+                    Draw(food.x, food.y, '*', ConsoleColor.Yellow);
                 }
                 else
                 {
@@ -303,8 +292,6 @@ namespace numberguess
             Console.WriteLine($"Din score: {score}");
         }
 
-        // ----- Helpers -----
-
         Direction ChangeDirection(Direction current, ConsoleKey key)
         {
             if (key == ConsoleKey.UpArrow && current != Direction.Down) return Direction.Up;
@@ -315,11 +302,23 @@ namespace numberguess
             return current;
         }
 
-        void Draw(int x, int y, char c)
+        void Draw(int x, int y, char c, ConsoleColor? color = null)
         {
             Console.SetCursorPosition(x, y);
-            Console.Write(c);
+
+            if (color.HasValue)
+            {
+                Console.ForegroundColor = color.Value;
+                Console.Write(c);
+                Console.ResetColor();
+            }
+
+            else
+            {
+                Console.Write(c);
+            }
         }
+
 
         void ShowScore(int score)
         {
@@ -333,15 +332,12 @@ namespace numberguess
         {
             Console.Clear();
 
-            // Top border with scoreboard space
             for (int x = 0; x < width; x++)
                 Draw(x, 1, '#');
 
-            // Bottom
             for (int x = 0; x < width; x++)
                 Draw(x, height - 1, '#');
 
-            // Sides
             for (int y = 1; y < height; y++)
             {
                 Draw(0, y, '#');
